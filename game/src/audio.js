@@ -1,0 +1,6 @@
+import {C} from './config.js';
+export function createAudio(){let ctx=null,muted=false;try{muted=localStorage.getItem(C.muteKey)==='1';}catch{}
+ function unlock(){ctx??=new (window.AudioContext||window.webkitAudioContext)();if(ctx.state==='suspended')ctx.resume();}
+ function tone(freq,time,duration,type='sine',volume=.1,end=freq){const o=ctx.createOscillator(),g=ctx.createGain();o.type=type;o.frequency.setValueAtTime(freq,time);o.frequency.exponentialRampToValueAtTime(Math.max(20,end),time+duration);g.gain.setValueAtTime(.001,time);g.gain.exponentialRampToValueAtTime(volume,time+.015);g.gain.exponentialRampToValueAtTime(.001,time+duration);o.connect(g).connect(ctx.destination);o.start(time);o.stop(time+duration+.02);}
+ return {unlock,get muted(){return muted;},toggle(){muted=!muted;try{localStorage.setItem(C.muteKey,muted?'1':'0');}catch{}},play(name){if(!ctx||muted)return;const t=ctx.currentTime;if(name==='launch')tone(450,t,.35,'sawtooth',.035,50);else if(name==='star'){tone(880,t,.25);tone(1320,t+.08,.35);}else if(name==='crash'||name==='lost')tone(90,t,.4,'triangle',.25,25);else if(name==='goal'||name==='victory'){(name==='victory'?[523,659,784,1047,1319,1568]:[523,659,784,1047]).forEach((f,i)=>tone(f,t+i*.11,.5));}else tone(600,t,.07,'sine',.05);}};
+}
